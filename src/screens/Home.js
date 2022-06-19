@@ -1,11 +1,11 @@
 /* Reactive Variables: https://www.apollographql.com/docs/react/local-state/reactive-variables/*/
-import { isLoggedInVar } from "../apollo";
+import { removeLoginToken } from "../apollo";
 
 const Home = () => {
     return (
         <div>
-            <h1>Home</h1>
-            <button onClick={() => isLoggedInVar(false)}>Log Out</button>
+            <h1>You're logged in!</h1>
+            <button onClick={() => removeLoginToken()}>Log Out</button>
         </div>
     );
 };

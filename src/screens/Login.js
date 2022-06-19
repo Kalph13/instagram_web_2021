@@ -1,94 +1,28 @@
-import { faFacebook, faFacebookF, faFacebookSquare, faInstagram } from "@fortawesome/free-brands-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { gql, useMutation } from "@apollo/client";
+import { setLoginToken } from "../apollo";
+import { useLocation } from "react-router-dom";
+
+/* import { useState } from "react"; */
 import styled from "styled-components";
+import { faFacebookSquare, faInstagram } from "@fortawesome/free-brands-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /* Reactive Variables: https://www.apollographql.com/docs/react/local-state/reactive-variables/*/
-import { isLoggedInVar, darkModeVar } from "../apollo";
+/* import { isLoggedInVar, darkModeVar } from "../apollo"; */
 
-const Container = styled.div`
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    align-items: center;
-    justify-content: center;
-`;
+/* React Hook Form: https://react-hook-form.com */
+/* Less Code and More Performance + Isolate Re-renders + Subscriptions + Faster Mount */
+import { useForm } from "react-hook-form";
 
-const Wrapper = styled.div`
-    max-width: 350px;
-    width: 100%;
-`;
-
-const WhiteBox = styled.div`
-    background-color: white;
-    border: 1px solid rgb(219, 219, 219);
-    width: 100%;
-`;
-
-const TopBox = styled(WhiteBox)`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 35px 40px 25px 40px;
-    margin-bottom: 10px;
-    form {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-items: center;
-        width: 100%;
-        margin-top: 35px;
-        input {
-            background-color: #fafafa;
-            width: 100%;
-            box-sizing: border-box;
-            border: 0.5px solid rgb(219, 219, 219);
-            border-radius: 3px;
-            margin-top: 5px;
-            padding: 7px;
-            &::placeholder {
-                font-size: 12px;
-            }
-            &:last-child {
-                background-color: #0095f6;
-                color: white;
-                border: none;
-                margin-top: 12px;
-                padding: 8px 0px;
-                font-weight: 600;
-                text-align: center;
-            }
-        }
-    }
-`;
-
-const BottomBox = styled(WhiteBox)`
-    padding: 20px 0px;
-    text-align: center;
-    a {
-        font-weight: 600;
-        color: #0095f6;
-    }
-`;
-
-const Separator = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    margin: 20px 0px 30px 0px;
-    text-transform: uppercase;
-    div {
-        width: 100%;
-        height: 1px;
-        background-color: rgb(219, 219, 219);
-    }
-    span {
-        margin: 0px 10px;
-        font-weight: 600;
-        color: #8e8e8e;
-    }
-`;
+import routes from "../routes";
+import AuthLayout from "../components/auth/AuthLayout";
+import BottomBox from "../components/auth/BottomBox";
+import Button from "../components/auth/Button";
+import FormBox from "../components/auth/FormBox";
+import FormError from "../components/auth/FormError";
+import Input from "../components/auth/Input";
+import Separator from "../components/auth/Separator";
+import PageTitle from "../components/PageTitle";
 
 const FacebookLogin = styled.div`
     color: #385285;
@@ -98,34 +32,170 @@ const FacebookLogin = styled.div`
     }
 `;
 
+const Notification = styled.div`
+    color: #2ecc71;
+`;
+
+const LOGIN_MUTATION = gql`
+    mutation Login($username: String!, $password: String!) {
+        login(username: $username, password: $password) {
+            loginSucceed
+            loginError
+            loginToken
+        }
+    }
+`;
+
 const Login = () => {
+    const location = useLocation();
+    console.log(location);
+
+    /* useForm: https://react-hook-form.com/api/useform */
+    const { register, handleSubmit, formState, getValues, setError, clearErrors } = useForm({
+        mode: "onChange",
+        defaultValues: {
+            username: location?.state?.username || "",
+            password: location?.state?.password || ""
+        }
+    });
+
+    const onCompleted = data => {
+        const {
+            login: {
+                loginSucceed,
+                loginError,
+                loginToken
+            }
+        } = data;
+
+        /* setError: https://react-hook-form.com/api/useform/seterror */
+        /* Doesn't Work Well Alone (Kills the Form and Returns Nothing): Add clearErrors */
+        if (!loginSucceed) {
+            return setError("LoginResult", {
+                message: loginError
+            });
+        }
+
+        if (loginToken) {
+            setLoginToken(loginToken);
+        }
+    }
+
+    /* useMutation: https://www.apollographql.com/docs/react/data/mutations */
+    /* login: Extract a Mutation Function from GraphQL */
+    /* onCompleted (The Name Matters): A Callback Function Called When the Mutation Function Completes with No Error */
+    const [ login, { loading }] = useMutation(LOGIN_MUTATION, { onCompleted });
+
+    const clearLoginError = () => {
+        clearErrors("LoginResult");
+    };
+    
+    const onSubmitValid = data => {
+        if (loading) {
+            return;
+        }
+
+        /* Get Values from useForm */
+        const { username, password } = getValues();
+        
+        /* Run the Mutation */
+        login({ variables: { username, password } })
+    }
+
+    /* Replaced by useForm*/
+    /* const onSubmitInvalid = (data) => {
+        console.log("Invalid", data);
+    } */
+
+    /* Replaced by useForm */
+    /* const [ username, setUsername ] = useState("");
+    const [ usernameError, setUsernameError ] = useState("");
+    
+    const onUsernameChange = (event) => {
+        setUsernameError("");
+        setUsername(event.target.value);
+    };
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        
+        if (username === "") {
+            setUsernameError("Username is empty");
+        }
+
+        if (username.length < 10) {
+            setUsernameError("Username should be longer than 10 characters");
+        }
+    }; */
+
     return (
-        <Container>
-            <Wrapper>
-                <TopBox>
-                    <div>
-                        <FontAwesomeIcon icon={faInstagram} size="3x" />
-                    </div>
-                    <form>
-                        <input type="text" placeholder="Username" />
-                        <input type="password" placeholder="Password" />
-                        <input type="submit" value="Log in" />
-                    </form>
-                    <Separator>
-                        <div></div>
-                        <span>Or</span>
-                        <div></div>
-                    </Separator>
-                    <FacebookLogin>
-                        <FontAwesomeIcon icon={faFacebookSquare} />
-                        <span>Log in with Facebook</span>
-                    </FacebookLogin>
-                </TopBox>
-                <BottomBox>
-                    <span>Don't have an account?</span> <a href="#">Sign up</a>
-                </BottomBox>
-            </Wrapper>
-        </Container>
+        <AuthLayout>
+            <PageTitle title="Login" />
+            <FormBox>
+                <div>
+                    <FontAwesomeIcon icon={faInstagram} size="3x" />
+                </div>
+                <Notification>{location?.state?.message}</Notification>
+                {/* Replaced by useForm
+                <form onSubmit={handleSubmit}>
+                    {usernameError}
+                    <Input
+                        type="text"
+                        placeholder="Username"
+                        value={username}
+                        onChange={onUsernameChange}
+                    />
+                    <Input type="password" placeholder="Password" />
+                    <Button
+                        type="submit"
+                        value="Log in"
+                        disabled={username === "" && username.length < 10}
+                    />
+                </form>
+                */}
+                <form onSubmit={handleSubmit(onSubmitValid)}>
+                    <Input
+                        type="text"
+                        placeholder="Username"
+                        {...register("username", {
+                            required: "Username is required",
+                            minLength: {
+                                value: 5,
+                                message: "Username should be longer than 5 characters"
+                            },
+                            onChange: () => clearLoginError()
+                        })}
+                        hasError={Boolean(formState.errors?.username?.message)}
+                    />
+                    <FormError message={formState.errors?.username?.message} />
+                    <Input
+                        type="password"
+                        placeholder="Password"
+                        {...register("password", {
+                            required: "Password is required",
+                            minLength: {
+                                value: 8,
+                                message: "Password should be longer than 8 characters"
+                            },
+                            onChange: () => clearLoginError()
+                        })}
+                        hasError={Boolean(formState.errors?.password?.message)}
+                    />
+                    <FormError message={formState.errors?.password?.message} />
+                    <Button type="submit" value="Log in" disabled={!formState.isValid} />
+                </form>
+                <Separator />
+                <FacebookLogin>
+                    <FontAwesomeIcon icon={faFacebookSquare} />
+                    <span>Log in with Facebook</span>
+                </FacebookLogin>
+            </FormBox>
+            <BottomBox 
+                cta="Don't have an account?"
+                linkText="Sign up"
+                link={routes.signUp}
+            />
+        </AuthLayout>
     );
 };
 
