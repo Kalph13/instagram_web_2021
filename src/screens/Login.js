@@ -48,7 +48,6 @@ const LOGIN_MUTATION = gql`
 
 const Login = () => {
     const location = useLocation();
-    console.log(location);
 
     /* useForm: https://react-hook-form.com/api/useform */
     const { register, handleSubmit, formState, getValues, setError, clearErrors } = useForm({

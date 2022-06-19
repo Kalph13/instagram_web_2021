@@ -4,7 +4,7 @@ import styled from "styled-components";
 const Button = styled.input`
     width: 100%;
     background-color: ${props => props.theme.accent};
-    opacity: ${props => props.disabled ? "0.2" : "1"};
+    opacity: ${props => props.disabled ? "0.4" : "1"};
     color: white;
     border: none;
     border-radius: 3px;
@@ -12,6 +12,7 @@ const Button = styled.input`
     padding: 8px 0px;
     font-weight: 600;
     text-align: center;
+    cursor: pointer;
 `;
 
 /* 'props => {}' is Not Necessary */

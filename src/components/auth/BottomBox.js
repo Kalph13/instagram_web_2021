@@ -6,6 +6,7 @@ import { BaseBox } from "../shared";
 const StyledBottomBox = styled(BaseBox)`
     padding: 20px 0px;
     text-align: center;
+    background-color: ${props => props.theme.bgColor};
     a {
         font-weight: 600;
         margin-left: 5px;

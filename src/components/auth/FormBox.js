@@ -8,6 +8,7 @@ const Container = styled(BaseBox)`
     justify-content: center;
     padding: 35px 40px 25px 40px;
     margin-bottom: 10px;
+    background-color: ${props => props.theme.bgColor};
     form {
         display: flex;
         flex-direction: column;
