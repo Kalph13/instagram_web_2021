@@ -10,12 +10,14 @@ import { ThemeProvider } from "styled-components";
 /* react-helmet-async: A Fork of React Helmet (https://www.npmjs.com/package/react-helmet-async) */
 import { HelmetProvider } from "react-helmet-async";
 
+import routes from "./routes";
+import { GlobalStyles, darkTheme, lightTheme } from "./styles";
+
+import Layout from "./components/Layout";
 import Home from "./screens/Home";
 import Login from "./screens/Login";
 import SignUp from "./screens/SignUp";
 import NotFound from "./screens/NotFound";
-import routes from "./routes";
-import { GlobalStyles, darkTheme, lightTheme } from "./styles";
 
 const App = () => {
   /* Replaced by 'useReactiveVar' */
@@ -33,7 +35,12 @@ const App = () => {
           <GlobalStyles />
           <Router>
             <Routes>
-              <Route path={routes.home} element={isLoggedIn ? <Home /> : <Login />} />
+              <Route path={routes.home} element={isLoggedIn ? 
+                <Layout>
+                  <Home />
+                </Layout> 
+                : <Login />}
+              />
               {!isLoggedIn ? <Route path={routes.signUp} element={<SignUp />} /> : null }
               <Route element={<NotFound />} />
             </Routes>

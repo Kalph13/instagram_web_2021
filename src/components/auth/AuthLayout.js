@@ -17,7 +17,7 @@ const Wrapper = styled.div`
     width: 100%;
 `;
 
-const Footer = styled.div`
+const Footer = styled.footer`
     margin-top: 20px;
 `;
 
