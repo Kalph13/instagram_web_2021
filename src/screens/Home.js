@@ -17,7 +17,14 @@ const FEED_QUERY = gql`
             caption
             likes
             comments {
+                id
+                user {
+                    username
+                    avatar
+                }
                 payload
+                isMine
+                createdAt
             }
             commentsNumber
             createdAt

@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 
 import Avatar from "../../components/Avatar";
 import { FatText } from "../../components/shared";
+import Comments from "./Comments";
 
 import { faBookmark, faComment, faHeart, faPaperPlane } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as SolidHeart } from "@fortawesome/free-solid-svg-icons";
@@ -69,8 +70,9 @@ const Likes = styled(FatText)`
     margin-top: 15px;
 `;
 
-const Photo = ({ id, user, file, isLiked, likes}) => {
+const Photo = ({ id, user, file, isLiked, likes, caption, commentsNumber, comments }) => {
     /* readFragment, writeFrament: Read and Write Data to the Apollo Client Cache */
+    /* - Docs: https://www.apollographql.com/docs/react/caching/cache-interaction/#using-graphql-fragments */
     const updateToggleLike = (cache, result) => {
         const {
             data: {
@@ -149,6 +151,12 @@ const Photo = ({ id, user, file, isLiked, likes}) => {
                 <Likes>
                     {likes === 1 ? "1 like" : `${likes} likes`}
                 </Likes>
+                <Comments
+                    author={user.username}
+                    caption={caption}
+                    commentsNumber={commentsNumber}
+                    comments={comments}
+                />
             </PhotoData>
         </PhotoContainer>
     );
