@@ -1,6 +1,19 @@
+import { gql, useMutation } from "@apollo/client";
+import { useForm } from "react-hook-form";
 import styled from "styled-components";
 import PropTypes from "prop-types";
 import Comment from "./Comment";
+import useUser from "../../hooks/useUser";
+
+const CREATE_COMMENT_MUTATION = gql`
+    mutation CreateComment($photoId: Int!, $payload: String!) {
+        createComment(photoID: $photoId, payload: $payload) {
+            createCommentSucceed
+            createCommentError
+            createCommentID
+        }
+    }
+`;
 
 const CommentsContainer = styled.div`
     margin-top: 20px;
@@ -14,7 +27,100 @@ const CommentCount = styled.span`
     font-size: 10px;
 `;
 
-const Comments = ({ author, caption, commentsNumber, comments }) => {
+const PostCommentContainer = styled.div`
+    margin-top: 10px;
+    padding-top: 15px;
+    padding-bottom: 10px;
+    border-top: 1px solid ${props => props.theme.borderColor};
+`;
+
+const PostCommentInput = styled.input`
+    width: 100%;
+    &::placeholder {
+        font-size: 12px;
+    }
+`;
+
+const Comments = ({ photoID, author, caption, commentsNumber, comments }) => {
+    const { data: userData } = useUser();
+    const { register, handleSubmit, setValue, getValues } = useForm();
+
+    const createCommentUpdate = (cache, result) => {        
+        const { payload } = getValues();
+        setValue("payload", "");
+
+        const {
+            data: {
+                createComment: {
+                    createCommentSucceed,
+                    createCommentID
+                }
+            }
+        } = result;
+
+        if (createCommentSucceed && userData?.findMe) {
+            const newComment = {
+                __typename: "Comment",
+                id: createCommentID,
+                createdAt: Date.now() + "",
+                isMine: true,
+                payload,
+                user: {
+                    ...userData.findMe
+                }
+            };
+
+            /* Values vs. References in cache.modify: https://www.apollographql.com/docs/react/caching/cache-interaction#values-vs-references */
+            /* References Update: https://www.apollographql.com/docs/react/caching/cache-interaction#example-updating-the-cache-after-a-mutation */
+            const newCommentFragment = cache.writeFragment({
+                data: newComment,
+                fragment: gql`
+                    fragment CommentCache on Comment {
+                        id
+                        createdAt
+                        isMine
+                        payload
+                        user {
+                            username
+                            avatar
+                        }
+                    }
+                `
+            });
+
+            cache.modify({
+                id: `Photo:${photoID}`,
+                fields: {
+                    comments(prev) {
+                        return [...prev, newCommentFragment];
+                    },
+                    commentsNumber(prev) {
+                        return prev + 1;
+                    }
+                }
+            });
+        }
+    };
+
+    const [ createCommentMutation, { loading }] = useMutation(CREATE_COMMENT_MUTATION, {
+        update: createCommentUpdate
+    });
+    
+    const onSubmitValid = data => {
+        const { payload } = data;
+        
+        if (loading) {
+            return;
+        }
+
+        createCommentMutation({
+            variables: {
+                photoId: photoID,
+                payload
+            }
+        });
+    };
+
     return (
         <CommentsContainer>
             <Comment author={author} payload={caption} />
@@ -24,15 +130,30 @@ const Comments = ({ author, caption, commentsNumber, comments }) => {
             {comments?.map(comment => 
                 <Comment 
                     key={comment.id}
+                    id={comment.id}
+                    photoID={photoID}
                     author={comment.user.username}
                     payload={comment.payload}
+                    isMine={comment.isMine}
                 />
             )}
+            <PostCommentContainer>
+                <form onSubmit={handleSubmit(onSubmitValid)}>
+                    <PostCommentInput 
+                        {...register("payload", {
+                            required: true
+                        })}
+                        type="text"
+                        placeholder="Write a comment..."
+                    />
+                </form>
+            </PostCommentContainer> 
         </CommentsContainer>
     );
 };
 
 Comments.propTypes = {
+    photoID: PropTypes.number.isRequired,
     author: PropTypes.string.isRequired,
     caption: PropTypes.string,
     commentsNumber: PropTypes.number.isRequired,

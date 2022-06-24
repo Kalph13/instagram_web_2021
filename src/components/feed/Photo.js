@@ -71,8 +71,6 @@ const Likes = styled(FatText)`
 `;
 
 const Photo = ({ id, user, file, isLiked, likes, caption, commentsNumber, comments }) => {
-    /* readFragment, writeFrament: Read and Write Data to the Apollo Client Cache */
-    /* - Docs: https://www.apollographql.com/docs/react/caching/cache-interaction/#using-graphql-fragments */
     const updateToggleLike = (cache, result) => {
         const {
             data: {
@@ -83,7 +81,27 @@ const Photo = ({ id, user, file, isLiked, likes, caption, commentsNumber, commen
         } = result;
 
         if (toggleLikeSucceed) {
-            const fragmentID = `Photo:${id}`;
+            /* CacheModify: https://www.apollographql.com/docs/react/caching/cache-interaction/#using-cachemodify */
+            const photoID = `Photo:${id}`;
+
+            cache.modify({
+                id: photoID,
+                fields: {
+                    isLiked(prev) {
+                        return !prev;
+                    },
+                    likes(prev) {
+                        if (isLiked) {
+                            return prev - 1;
+                        }
+                        return prev + 1;
+                    }
+                }
+            });
+
+            /* Replaced by cacheModify */
+            /* readFragment, writeFrament: Read and Write Data to the Apollo Client Cache (https://www.apollographql.com/docs/react/caching/cache-interaction/#using-graphql-fragments) */
+            /* const fragmentID = `Photo:${id}`;
             
             const fragment = gql`
                 fragment PhotoCache on Photo {
@@ -108,7 +126,7 @@ const Photo = ({ id, user, file, isLiked, likes, caption, commentsNumber, commen
                         likes: cacheIsLiked ? cacheLikes - 1 : cacheLikes + 1
                     }
                 });
-            }
+            } */
         }
     };
     
@@ -152,6 +170,7 @@ const Photo = ({ id, user, file, isLiked, likes, caption, commentsNumber, commen
                     {likes === 1 ? "1 like" : `${likes} likes`}
                 </Likes>
                 <Comments
+                    photoID={id}
                     author={user.username}
                     caption={caption}
                     commentsNumber={commentsNumber}
