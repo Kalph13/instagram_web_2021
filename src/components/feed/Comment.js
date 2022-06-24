@@ -91,7 +91,9 @@ const Comment = ({ id, photoID, author, payload, isMine }) => {
     /* React.Fragment: Just </>, Used Here to Put Key Values in Map() */
     return (
         <CommentContainer>
-            <FatText>{author}</FatText>
+            <Link to={`/users/${author}`}>
+                <FatText>{author}</FatText>
+            </Link>
             {/* <CommentCaption 
                 dangerouslySetInnerHTML={{
                     __html: cleanedPayload

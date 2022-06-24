@@ -48,9 +48,16 @@ const authLink = setContext((_, { headers }) => {
     };
 });
 
+/* typePolicies: https://www.apollographql.com/docs/react/caching/cache-configuration/#customizing-cache-ids */
 export const client = new ApolloClient({
     link: authLink.concat(httpLink),
-    cache: new InMemoryCache()
+    cache: new InMemoryCache({
+        typePolicies: {
+            User: {
+                keyFields: obj => `User:${obj.username}`
+            }
+        }
+    })
 });
 
 /* Request Header: https://www.apollographql.com/docs/react/networking/basic-http-networking#customizing-request-headers */

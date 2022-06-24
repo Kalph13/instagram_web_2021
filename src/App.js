@@ -17,6 +17,7 @@ import Layout from "./components/Layout";
 import Home from "./screens/Home";
 import Login from "./screens/Login";
 import SignUp from "./screens/SignUp";
+import Profile from "./screens/Profile";
 import NotFound from "./screens/NotFound";
 
 const App = () => {
@@ -42,6 +43,11 @@ const App = () => {
                 : <Login />}
               />
               {!isLoggedIn ? <Route path={routes.signUp} element={<SignUp />} /> : null }
+              <Route path={`/users/:username`} element={
+                <Layout>
+                  <Profile />
+                </Layout>
+              } />
               <Route element={<NotFound />} />
             </Routes>
           </Router>

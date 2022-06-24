@@ -2,12 +2,14 @@ import { useEffect } from "react";
 import { gql, useQuery, useReactiveVar } from "@apollo/client";
 import { isLoggedInVar, removeLoginToken } from "../apollo";
 
-const ME_QUERY = gql`
+export const ME_QUERY = gql`
     query FindMe {
         findMe {
             id
             username
             avatar
+            totalFollowing
+            totalFollowers
         }
     }
 `;
