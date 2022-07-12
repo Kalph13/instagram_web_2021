@@ -36,7 +36,8 @@ export const disableDarkMode = () => {
 
 /* Authentication at Apollo Client: https://www.apollographql.com/docs/react/networking/authentication */
 const httpLink = createHttpLink({
-    uri: "http://localhost:4000/graphql"
+    uri: "https://project-instagram-2021.herokuapp.com/graphql"
+    /* uri: "http://localhost:4000/graphql" */
 });
 
 const authLink = setContext((_, { headers }) => {
